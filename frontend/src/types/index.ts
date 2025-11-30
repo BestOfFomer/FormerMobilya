@@ -15,12 +15,14 @@ export interface User {
 }
 
 export interface Address {
+  _id?: string;
+  title: string;
   fullName: string;
   phone: string;
   city: string;
   district: string;
   address: string;
-   isDefault: boolean;
+  isDefault: boolean;
 }
 
 export interface AuthResponse {

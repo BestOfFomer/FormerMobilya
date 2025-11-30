@@ -76,6 +76,7 @@ import productRoutes from './routes/product.routes';
 import uploadRoutes from './routes/upload.routes';
 import orderRoutes from './routes/order.routes';
 import settingsRoutes from './routes/settings.routes';
+import addressRoutes from './routes/address.routes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -83,6 +84,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/addresses', addressRoutes);
 
 // Health Check Route
 app.get('/health', (_req: Request, res: Response) => {
@@ -106,6 +108,7 @@ app.get('/api', (_req: Request, res: Response) => {
       orders: '/api/orders',
       upload: '/api/upload',
       settings: '/api/settings',
+      addresses: '/api/addresses',
     },
   });
 });

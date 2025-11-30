@@ -2,6 +2,8 @@
  * Enhanced API Client with automatic token refresh
  */
 
+import type { Address } from '@/types';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export class APIError extends Error {
@@ -372,6 +374,33 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data),
         token,
+      }),
+  },
+
+  // Addresses
+  addresses: {
+    getAll: () => apiRequest('/api/addresses'),
+    
+    create: (data: Omit<Address, '_id'>) =>
+      apiRequest('/api/addresses', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+    
+    update: (id: string, data: Partial<Address>) =>
+      apiRequest(`/api/addresses/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+    
+    delete: (id: string) =>
+      apiRequest(`/api/addresses/${id}`, {
+        method: 'DELETE',
+      }),
+    
+    setDefault: (id: string) =>
+      apiRequest(`/api/addresses/${id}/set-default`, {
+        method: 'PUT',
       }),
   },
 };

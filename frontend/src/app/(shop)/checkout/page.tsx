@@ -17,9 +17,10 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { CreditCard, Building2 } from 'lucide-react';
+import { CreditCard, Building2, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api-client';
+import { Address } from '@/types';
 
 const shippingSchema = z.object({
   email: z.string().email('Geçerli bir e-posta adresi girin'),
@@ -45,6 +46,10 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [useNewAddress, setUseNewAddress] = useState(false);
+  const [saveAddress, setSaveAddress] = useState(false);
   
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -61,6 +66,29 @@ export default function CheckoutPage() {
     setPaymentMethod,
     clearCheckout,
   } = useCheckoutStore();
+
+  // Fetch saved addresses
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      if (!isAuthenticated) return;
+      
+      try {
+        const response = await api.addresses.getAll() as any;
+        const addresses = response.addresses || [];
+        setSavedAddresses(addresses);
+        
+        // Auto-select default address
+        const defaultAddress = addresses.find((addr: Address) => addr.isDefault);
+        if (defaultAddress && !useNewAddress) {
+          setSelectedAddressId(defaultAddress._id!);
+        }
+      } catch (error) {
+        console.error('Fetch addresses error:', error);
+      }
+    };
+
+    fetchAddresses();
+  }, [isAuthenticated, useNewAddress]);
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -92,18 +120,64 @@ export default function CheckoutPage() {
     },
   });
 
-  const handleShippingSubmit = (data: ShippingFormData) => {
-    setContactInfo(data.email, data.phone);
-    setShippingAddress({
-      firstName: data.firstName,
-      lastName: data.lastName,
-      address: data.address,
-      city: data.city,
-      postalCode: data.postalCode,
-      country: 'TR',
-    });
-    setCurrentStep(2);
-    window.scrollTo(0, 0);
+  const handleShippingSubmit = async (data: ShippingFormData) => {
+    try {
+      let addressToUse;
+      
+      if (selectedAddressId && !useNewAddress) {
+        // Use saved address
+        const savedAddr = savedAddresses.find(a => a._id === selectedAddressId);
+        if (savedAddr) {
+          addressToUse = {
+            firstName: savedAddr.fullName.split(' ')[0] || savedAddr.fullName,
+            lastName: savedAddr.fullName.split(' ').slice(1).join(' ') || '',
+            address: savedAddr.address,
+            city: savedAddr.city,
+            postalCode: '',
+            country: 'TR',
+          };
+          setContactInfo(data.email || user?.email || '', savedAddr.phone);
+        }
+      } else {
+        // Use manual entry
+        addressToUse = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          address: data.address,
+          city: data.city,
+          postalCode: data.postalCode,
+          country: 'TR',
+        };
+        setContactInfo(data.email, data.phone);
+        
+        // Save address if checkbox is checked
+        if (saveAddress && isAuthenticated) {
+          try {
+            await api.addresses.create({
+              title: 'Sipariş Adresi',
+              fullName: `${data.firstName} ${data.lastName}`,
+              phone: data.phone,
+              city: data.city,
+              district: '', // Not collected in checkout  
+              address: data.address,
+              isDefault: false,
+            });
+            toast.success('Adres kaydedildi');
+          } catch (error) {
+            console.error('Save address error:', error);
+            // Don't block checkout if address save fails
+          }
+        }
+      }
+      
+      if (addressToUse) {
+        setShippingAddress(addressToUse);
+        setCurrentStep(2);
+        window.scrollTo(0, 0);
+      }
+    } catch (error) {
+      toast.error('Bir hata oluştu');
+    }
   };
 
   const handlePaymentSubmit = async (data: PaymentFormData) => {
@@ -190,10 +264,77 @@ export default function CheckoutPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={shippingForm.handleSubmit(handleShippingSubmit)} className="space-y-4">
-                    {/* Contact Info */}
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
+                  <form onSubmit={shippingForm.handleSubmit(handleShippingSubmit)} className="space-y-6">
+                    {/* Saved Addresses */}
+                    {isAuthenticated && savedAddresses.length > 0 && (
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold">Kayıtlı Adreslerim</Label>
+                        <RadioGroup
+                          value={selectedAddressId || ''}
+                          onValueChange={(value) => {
+                            setSelectedAddressId(value);
+                            setUseNewAddress(false);
+                          }}
+                          disabled={useNewAddress}
+                        >
+                          {savedAddresses.map((addr) => (
+                            <div
+                              key={addr._id}
+                              className={`flex items-start space-x-3 border p-4 rounded-lg cursor-pointer transition-colors ${
+                                selectedAddressId === addr._id && !useNewAddress
+                                  ? 'border-primary bg-primary/5'
+                                  : 'hover:bg-muted/50'
+                              }`}
+                            >
+                              <RadioGroupItem value={addr._id!} id={addr._id!} />
+                              <Label
+                                htmlFor={addr._id}
+                                className="flex-1 cursor-pointer"
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-semibold">{addr.title}</span>
+                                  {addr.isDefault && (
+                                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                                      Varsayılan
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-0.5">
+                                  <p>{addr.fullName} - {addr.phone}</p>
+                                  <p>{addr.address}, {addr.city}</p>
+                                </div>
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+
+                        <div className="flex items-center space-x-2 pt-2">
+                          <Checkbox
+                            id="useNewAddress"
+                            checked={useNewAddress}
+                            onCheckedChange={(checked) => {
+                              setUseNewAddress(checked as boolean);
+                              if (checked) {
+                                setSelectedAddressId(null);
+                              }
+                            }}
+                          />
+                          <Label htmlFor="useNewAddress" className="text-sm cursor-pointer font-medium">
+                            <MapPin className="inline h-4 w-4 mr-1" />
+                            Farklı adres kullan
+                          </Label>
+                        </div>
+
+                        <div className="border-t pt-4" />
+                      </div>
+                    )}
+
+                    {/* Manual Address Entry - Show if no saved addresses OR useNewAddress is true */}
+                    {(!isAuthenticated || savedAddresses.length === 0 || useNewAddress) && (
+                      <>
+                        {/* Contact Info */}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="space-y-2">
                         <Label htmlFor="email">E-posta *</Label>
                         <Input
                           id="email"
@@ -296,6 +437,22 @@ export default function CheckoutPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* Save Address Checkbox - Only show if authenticated and using new address */}
+                    {isAuthenticated && (!savedAddresses.length || useNewAddress) && (
+                      <div className="flex items-center space-x-2 pt-2 border-t">
+                        <Checkbox
+                          id="saveAddress"
+                          checked={saveAddress}
+                          onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
+                        />
+                        <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                          Bu adresi kaydet
+                        </Label>
+                      </div>
+                    )}
+                  </>
+                )}
 
                     <div className="flex justify-between pt-4">
                       <Button type="button" variant="outline" asChild>
