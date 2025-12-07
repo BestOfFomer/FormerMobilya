@@ -82,6 +82,12 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const handleAddToCart = () => {
     if (!product) return;
 
+    // Check if variant selection is required
+    if (product.variants && product.variants.length > 0 && selectedVariant === null) {
+      toast.error('Lütfen bir varyant seçin');
+      return;
+    }
+
     const variant = selectedVariant !== null ? product.variants?.[selectedVariant] : undefined;
 
     addItem({
@@ -233,14 +239,14 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                     variant="ghost"
                     size="icon"
                     onClick={() => setQuantity(quantity + 1)}
-                    disabled={!product.stock || quantity >= product.stock}
+                    disabled={!product.totalStock || quantity >= product.totalStock}
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                {product.stock && product.stock < 10 && (
+                {product.totalStock && product.totalStock < 10 && product.totalStock > 0 && (
                   <span className="text-sm text-muted-foreground">
-                    Son {product.stock} adet
+                    Son {product.totalStock} adet
                   </span>
                 )}
               </div>
@@ -252,10 +258,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                 size="lg"
                 className="flex-1"
                 onClick={handleAddToCart}
-                disabled={!product.stock || product.stock === 0}
+                disabled={!product.active || (product.variants && product.variants.length > 0 && selectedVariant === null)}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                Sepete Ekle
+                {!product.active 
+                  ? 'Tükendi' 
+                  : (product.variants && product.variants.length > 0 && selectedVariant === null)
+                    ? 'Varyant Seçin'
+                    : 'Sepete Ekle'
+                }
               </Button>
               <Button size="lg" variant="outline">
                 <Heart className="h-5 w-5" />

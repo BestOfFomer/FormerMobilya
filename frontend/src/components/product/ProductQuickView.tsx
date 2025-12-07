@@ -230,7 +230,18 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
-                  {product.active ? (
+                  {!product.active ? (
+                    <Button size="lg" className="w-full" disabled>
+                      Stokta Yok
+                    </Button>
+                  ) : product.variants && product.variants.length > 0 ? (
+                    <Link href={`/products/${product.slug}`} onClick={() => onOpenChange(false)}>
+                      <Button size="lg" className="w-full">
+                        <ShoppingCart className="mr-2 h-5 w-5" />
+                        Varyant Seçin
+                      </Button>
+                    </Link>
+                  ) : (
                     <Button
                       size="lg"
                       className="w-full"
@@ -238,10 +249,6 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
                     >
                       <ShoppingCart className="mr-2 h-5 w-5" />
                       Sepete Ekle
-                    </Button>
-                  ) : (
-                    <Button size="lg" className="w-full" disabled>
-                      Stokta Yok
                     </Button>
                   )}
 

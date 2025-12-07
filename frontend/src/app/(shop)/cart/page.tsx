@@ -13,7 +13,15 @@ export default function CartPage() {
 
   const subtotal = getTotal();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  const shippingCost = subtotal > 5000 ? 0 : 50; // Free shipping over 5000 TL
+  
+  // Calculate total shipping cost from all products
+  const shippingCost = subtotal > 5000 
+    ? 0 
+    : items.reduce((total, item) => {
+        const productShipping = item.product?.shippingCost || 50;
+        return total + productShipping;
+      }, 0);
+  
   const total = subtotal + shippingCost;
 
   // Handle image URL - check if it's already absolute
@@ -131,7 +139,7 @@ export default function CartPage() {
                         </Button>
                       </div>
 
-                      <p className="font-bold">{formatPrice(item.totalPrice)}</p>
+                      <p className="font-bold">{formatPrice(item.price * item.quantity)}</p>
                     </div>
                   </div>
                 </CardContent>

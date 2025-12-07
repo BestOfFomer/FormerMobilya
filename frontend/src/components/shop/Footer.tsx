@@ -42,7 +42,7 @@ export function Footer() {
           <div className="space-y-4">
             <div>
               <Image
-                src="/images/former_logo.png"
+                src="/images/fomer_logo.png"
                 alt="Former Mobilya"
                 width={160}
                 height={50}
@@ -118,8 +118,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:info@formermobilya.com" className="hover:text-foreground">
-                  info@formermobilya.com
+                <a href="mailto:info@fomermobilya.com" className="hover:text-foreground">
+                  info@fomermobilya.com
                 </a>
               </li>
               {hasSocialLinks && (
@@ -198,7 +198,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 text-center text-sm text-muted-foreground md:flex-row">
           <div className="flex items-center gap-2">
-            <p>© {currentYear} FormerMobilya. Tüm hakları saklıdır.</p>
+            <p>© {currentYear} Fomer Mobilya. Tüm hakları saklıdır.</p>
             <span className="text-muted-foreground/50">•</span>
             <Link href="/login?redirect=/admin" className="text-muted-foreground/70 hover:text-foreground transition-colors text-xs">
               Admin

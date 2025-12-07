@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
@@ -16,7 +15,11 @@ export function CategoryCard({ category }: CategoryCardProps) {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url; // Already absolute URL
     }
-    return `${process.env.NEXT_PUBLIC_API_URL}${url}`; // Relative URL
+    // Ensure we use the backend API URL
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+    const fullUrl = `${apiUrl}${url}`;
+    console.log('Category image URL:', fullUrl); // Debug
+    return fullUrl;
   };
 
   return (
@@ -25,13 +28,10 @@ export function CategoryCard({ category }: CategoryCardProps) {
         <CardContent className="p-0 relative h-full">
           {/* Image Container */}
           <div className="relative aspect-square overflow-hidden bg-muted">
-            <Image
+            <img
               src={getImageUrl(category.image)}
               alt={category.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-              unoptimized
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
             
             {/* Overlay */}

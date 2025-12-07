@@ -75,11 +75,15 @@ export default function CategoriesPage() {
       await api.categories.delete(deletingCategory._id, accessToken);
       toast.success('Kategori silindi');
       fetchCategories();
-    } catch (error: any) {
-      toast.error('Silme başarısız: ' + error.message);
-    } finally {
       setDeleteDialogOpen(false);
       setDeletingCategory(null);
+    } catch (error: any) {
+      // Backend'den gelen hata mesajını göster
+      const errorMessage = error.response?.data?.message || error.message || 'Kategori silinirken bir hata oluştu';
+      toast.error(errorMessage, {
+        duration: 5000, // Daha uzun süre göster
+      });
+      // Hata durumunda dialog'u kapatma, kullanıcı mesajı okusun
     }
   };
 

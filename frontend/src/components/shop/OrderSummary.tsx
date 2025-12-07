@@ -7,7 +7,15 @@ export function OrderSummary() {
   const { items, getTotal } = useCartStore();
   
   const subtotal = getTotal();
-  const shipping = subtotal >= 5000 ? 0 : 150;
+  
+  // Calculate shipping cost from all products
+  const shipping = subtotal >= 5000 
+    ? 0 
+    : items.reduce((total, item) => {
+        const productShipping = item.product?.shippingCost || 50;
+        return total + productShipping;
+      }, 0);
+  
   const grandTotal = subtotal + shipping;
 
   // Handle image URL - check if it's already absolute

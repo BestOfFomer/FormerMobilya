@@ -21,11 +21,20 @@ export default async function HomePage() {
   }
 
   try {
-    // Fetch featured products
-    const featuredResponse = await api.products.getAll({
-      limit: '8',
-    }) as any;
-    featuredProducts = featuredResponse.products || [];
+    // Fetch settings to get featured product IDs
+    const settingsResponse = await api.settings.get() as any;
+    const featuredProductIds = settingsResponse.featuredProducts || [];
+
+    if (featuredProductIds.length > 0) {
+      // Fetch all products and filter by featured IDs
+      const allProductsResponse = await api.products.getAll() as any;
+      const allProducts = allProductsResponse.products || [];
+      
+      // Filter and maintain the order from settings
+      featuredProducts = featuredProductIds
+        .map((id: string) => allProducts.find((p: Product) => p._id === id))
+        .filter(Boolean); // Remove any undefined products
+    }
 
     // Fetch new arrivals
     const newProductsResponse = await api.products.getAll({

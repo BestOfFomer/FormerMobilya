@@ -187,7 +187,15 @@ export default function CheckoutPage() {
     try {
       // Calculate total
       const total = useCartStore.getState().getTotal();
-      const shipping = total >= 5000 ? 0 : 150;
+      
+      // Calculate shipping cost from all products
+      const shipping = total >= 5000 
+        ? 0 
+        : items.reduce((sum, item) => {
+            const productShipping = item.product?.shippingCost || 50;
+            return sum + productShipping;
+          }, 0);
+      
       const grandTotal = total + shipping;
 
       // Create order

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Category } from '../models';
+import { Category, Product } from '../models';
 
 /**
  * Get all categories
@@ -146,8 +146,8 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
   try {
     const { id } = req.params;
 
-    const category = await Category.findByIdAndDelete(id);
-
+    // Check if category exists
+    const category = await Category.findById(id);
     if (!category) {
       res.status(404).json({
         error: 'Not Found',
@@ -155,6 +155,32 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
       });
       return;
     }
+
+    // Check if there are any products using this category
+    const productCount = await Product.countDocuments({ category: id });
+    
+    if (productCount > 0) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: `Bu kategoriye ait ${productCount} ürün bulunmaktadır. Kategoriyi silmeden önce bu ürünleri silin veya kategorilerini güncelleyin.`,
+        productCount,
+      });
+      return;
+    }
+
+    // Check if category has subcategories
+    const subcategoryCount = await Category.countDocuments({ parent: id });
+    if (subcategoryCount > 0) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: `Bu kategoriye ait ${subcategoryCount} alt kategori bulunmaktadır. Önce alt kategorileri silin veya başka bir kategoriye taşıyın.`,
+        subcategoryCount,
+      });
+      return;
+    }
+
+    // Safe to delete
+    await Category.findByIdAndDelete(id);
 
     res.status(200).json({
       message: 'Category deleted successfully',

@@ -1,58 +1,43 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MapPin, Phone, Clock } from 'lucide-react';
 import Link from 'next/link';
+import { api } from '@/lib/api-client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Store {
-  id: string;
   name: string;
   address: string;
-  city: string;
   phone: string;
-  hours: string;
+  email: string;
+  workdays: string;
+  workhours: string;
+  mapEmbed: string;
 }
 
-const stores: Store[] = [
-  {
-    id: '1',
-    name: 'İstanbul Anadolu Mağazası',
-    address: 'Ataşehir Mahallesi, Mobilya Caddesi No:45',
-    city: 'İstanbul (Anadolu)',
-    phone: '+90 216 555 11 22',
-    hours: 'Pzt-Cmt: 09:00-19:00, Pazar: 10:00-18:00',
-  },
-  {
-    id: '2',
-    name: 'İstanbul Avrupa Mağazası',
-    address: 'Beşiktaş Mahallesi, Ev Tekstili Sokak No:78',
-    city: 'İstanbul (Avrupa)',
-    phone: '+90 212 555 33 44',
-    hours: 'Pzt-Cmt: 09:00-19:00, Pazar: 10:00-18:00',
-  },
-  {
-    id: '3',
-    name: 'Ankara Kızılay Mağazası',
-    address: 'Kızılay Meydanı, İç Dekorasyon Cd. No:12',
-    city: 'Ankara',
-    phone: '+90 312 555 55 66',
-    hours: 'Pzt-Cmt: 09:00-19:00, Pazar: 10:00-18:00',
-  },
-  {
-    id: '4',
-    name: 'İzmir Alsancak Mağazası',
-    address: 'Alsancak Mahallesi, Mobilya Plaza No:34',
-    city: 'İzmir',
-    phone: '+90 232 555 77 88',
-    hours: 'Pzt-Cmt: 09:00-19:00, Pazar: 10:00-18:00',
-  },
-];
-
-export const metadata = {
-  title: 'Mağazalarımız - FormerMobilya',
-  description: 'FormerMobilya mağazalarımızı keşfedin. Yakınınızdaki showroom\'u bulun.',
-};
-
 export default function StoresPage() {
+  const [stores, setStores] = useState<Store[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const response = await api.settings.get() as any;
+        if (response.pageContents?.stores?.items) {
+          setStores(response.pageContents.stores.items);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stores:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStores();
+  }, []);
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -89,60 +74,126 @@ export default function StoresPage() {
         </Card>
 
         {/* Stores Grid */}
-        <div className="grid gap-6 md:grid-cols-2">
-          {stores.map((store) => (
-            <Card key={store.id} className="hover:shadow-lg transition-shadow py-6">
-              <CardHeader>
-                <CardTitle>{store.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-3">
-                  <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium text-sm">{store.city}</div>
-                    <div className="text-sm text-muted-foreground">{store.address}</div>
-                  </div>
-                </div>
+        {isLoading ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            {[1, 2].map((i) => (
+              <Card key={i} className="py-6">
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : stores.length === 0 ? (
+          <Card className="py-12">
+            <CardContent className="text-center">
+              <p className="text-muted-foreground">Henüz mağaza bilgisi eklenmemiş.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2">
+            {stores.map((store, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow py-6">
+                <CardHeader>
+                  <CardTitle>{store.name || `Mağaza ${index + 1}`}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {store.address && (
+                    <div className="flex gap-3">
+                      <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-sm text-muted-foreground whitespace-pre-line">
+                          {store.address}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex gap-3">
-                  <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <a 
-                      href={`tel:${store.phone}`}
-                      className="text-sm hover:text-primary transition-colors"
-                    >
-                      {store.phone}
-                    </a>
-                  </div>
-                </div>
+                  {store.phone && (
+                    <div className="flex gap-3">
+                      <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <a 
+                          href={`tel:${store.phone.replace(/\s/g, '')}`}
+                          className="text-sm hover:text-primary transition-colors"
+                        >
+                          {store.phone}
+                        </a>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex gap-3">
-                  <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">{store.hours}</div>
-                  </div>
-                </div>
+                  {store.email && (
+                    <div className="flex gap-3">
+                      <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <a 
+                          href={`mailto:${store.email}`}
+                          className="text-sm hover:text-primary transition-colors"
+                        >
+                          {store.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="pt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1" asChild>
-                    <a 
-                      href={`https://www.google.com/maps/search/${encodeURIComponent(store.address)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Haritada Gör
-                    </a>
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1" asChild>
-                    <a href={`tel:${store.phone}`}>
-                      Ara
-                    </a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {(store.workdays || store.workhours) && (
+                    <div className="flex gap-3">
+                      <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-sm text-muted-foreground">
+                          {store.workdays && (
+                            <>
+                              {store.workdays}
+                              {store.workhours && ': '}
+                            </>
+                          )}
+                          {store.workhours && store.workhours}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {store.mapEmbed && (
+                    <div className="mt-4 rounded-lg overflow-hidden">
+                      <div 
+                        className="w-full"
+                        dangerouslySetInnerHTML={{ __html: store.mapEmbed }}
+                      />
+                    </div>
+                  )}
+
+                  <div className="pt-4 flex gap-2">
+                    {store.address && (
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                        <a 
+                          href={`https://www.google.com/maps/search/${encodeURIComponent(store.address)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Haritada Gör
+                        </a>
+                      </Button>
+                    )}
+                    {store.phone && (
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                        <a href={`tel:${store.phone.replace(/\s/g, '')}`}>
+                          Ara
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         {/* CTA */}
         <section className="mt-12 text-center bg-muted/50 rounded-lg p-12">

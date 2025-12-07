@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FormerMobilya Admin',
-  description: 'FormerMobilya e-commerce admin panel',
+  title: 'Fomer Mobilya Admin',
+  description: 'Fomer Mobilya e-commerce admin panel',
 };
 
 export default function RootLayout({

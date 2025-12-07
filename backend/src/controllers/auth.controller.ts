@@ -52,9 +52,12 @@ export const register = async (
       message: 'User registered successfully',
       user: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        createdAt: user.createdAt,
       },
       accessToken,
       refreshToken,
@@ -113,9 +116,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       message: 'Login successful',
       user: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
+        phone: user.phone,
+        createdAt: user.createdAt,
       },
       accessToken,
       refreshToken,
@@ -391,6 +397,60 @@ export const resetPassword = async (
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Şifre sıfırlama başarısız',
+    });
+  }
+};
+
+/**
+ * Change password for authenticated user
+ * POST /api/auth/change-password
+ */
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({
+        error: 'Bad Request',
+        message: 'Mevcut şifre ve yeni şifre gereklidir',
+      });
+      return;
+    }
+
+    // Find user with password
+    const user = await User.findById(userId).select('+passwordHash');
+    if (!user) {
+      res.status(404).json({
+        error: 'Not Found',
+        message: 'Kullanıcı bulunamadı',
+      });
+      return;
+    }
+
+    // Verify current password
+    const isMatch = await bcryptjs.compare(currentPassword, user.passwordHash);
+    if (!isMatch) {
+      res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Mevcut şifre yanlış',
+      });
+      return;
+    }
+
+    // Hash new password
+    const passwordHash = await bcryptjs.hash(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await user.save();
+
+    res.status(200).json({
+      message: 'Şifreniz başarıyla değiştirildi',
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Şifre değiştirme başarısız',
     });
   }
 };

@@ -29,7 +29,7 @@ const addressSchema = z.object({
   city: z.string().min(2, 'Şehir en az 2 karakter olmalı'),
   district: z.string().min(2, 'İlçe en az 2 karakter olmalı'),
   address: z.string().min(5, 'Adres en az 5 karakter olmalı'),
-  isDefault: z.boolean().default(false),
+  isDefault: z.boolean(),
 });
 
 type AddressFormData = z.infer<typeof addressSchema>;

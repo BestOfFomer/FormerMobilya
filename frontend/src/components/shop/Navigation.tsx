@@ -76,7 +76,7 @@ export function Navigation({ categories }: NavigationProps) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/images/former_logo.png"
+              src="/images/fomer_logo.png"
               alt="Former Mobilya"
               width={120}
               height={0}

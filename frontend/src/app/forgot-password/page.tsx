@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Image
-              src="/images/former_logo.png"
+              src="/images/fomer_logo.png"
               alt="Former Mobilya"
               width={180}
               height={60}

@@ -46,6 +46,7 @@ export const productSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   basePrice: z.number().min(0, 'Price cannot be negative'),
   discountedPrice: z.number().min(0).optional(),
+  shippingCost: z.number().min(0, 'Shipping cost cannot be negative').default(50),
   images: z.array(z.string()).min(1, 'At least one image is required'),
   dimensions: z
     .object({

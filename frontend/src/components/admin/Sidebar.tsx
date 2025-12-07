@@ -63,7 +63,7 @@ export function Sidebar() {
       <div className="px-6 py-4 border-b">
         <Link href="/admin" className="flex items-center gap-2">
           <Image
-            src="/images/former_logo.png"
+            src="/images/fomer_logo.png"
             alt="Former Mobilya"
             width={140}
             height={45}

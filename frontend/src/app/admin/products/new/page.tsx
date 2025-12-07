@@ -36,6 +36,7 @@ const productSchema = z.object({
   category: z.string().min(1, 'Kategori seçimi zorunlu'),
   basePrice: z.number().min(0, 'Fiyat 0 veya daha fazla olmalı'),
   discountedPrice: z.number().min(0).optional(),
+  shippingCost: z.number().min(0, 'Kargo ücreti 0 veya daha fazla olmalı'),
   images: z.array(z.string()).min(1, 'En az 1 görsel ekleyin'),
   model3D: z.string().optional(),
   dimensions: z.object({
@@ -76,6 +77,7 @@ export default function NewProductPage() {
     resolver: zodResolver(productSchema),
     defaultValues: {
       active: true,
+      shippingCost: 50,
       materials: [],
       images: [],
       variants: [],
@@ -99,6 +101,7 @@ export default function NewProductPage() {
     category: 'Kategori',
     basePrice: 'Normal Fiyat',
     discountedPrice: 'İndirimli Fiyat',
+    shippingCost: 'Kargo Ücreti',
     images: 'Görseller',
     dimensions: 'Ölçüler',
     materials: 'Malzemeler',
@@ -370,6 +373,25 @@ export default function NewProductPage() {
                 )}
               </div>
             )}
+
+            <div className="space-y-2">
+              <Label htmlFor="shippingCost">Kargo Ücreti (₺) *</Label>
+              <Input
+                id="shippingCost"
+                type="number"
+                step="0.01"
+                {...register('shippingCost', { valueAsNumber: true })}
+                placeholder="50"
+                disabled={isLoading}
+                className="h-11"
+              />
+              <p className="text-sm text-muted-foreground">
+                5.000 TL ve üzeri alışverişlerde ücretsiz kargo uygulanır
+              </p>
+              {errors.shippingCost && (
+                <p className="text-sm text-destructive">{errors.shippingCost.message}</p>
+              )}
+            </div>
           </CardContent>
         </Card>
 

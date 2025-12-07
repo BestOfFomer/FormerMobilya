@@ -33,7 +33,7 @@ const testModels = async () => {
     
     const userData = {
       name: 'Test User',
-      email: 'test@formermobilya.com',
+      email: 'test@fomermobilya.com',
       passwordHash: hashedPassword,
       role: UserRole.CUSTOMER,
       phone: '5551234567',

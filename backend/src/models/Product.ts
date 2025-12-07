@@ -28,6 +28,7 @@ export interface IProduct extends Document {
   category: mongoose.Types.ObjectId;
   basePrice: number;
   discountedPrice?: number;
+  shippingCost: number;
   images: string[];
   model3D?: string;
   dimensions?: IDimensions;
@@ -90,6 +91,11 @@ const ProductSchema = new Schema<IProduct>(
       min: [0, 'İndirimli fiyat negatif olamaz'],
       // Note: Price comparison validation is handled in controller
       // to avoid issues with update operations where this.basePrice may not be available
+    },
+    shippingCost: {
+      type: Number,
+      default: 50,
+      min: [0, 'Kargo ücreti negatif olamaz'],
     },
     images: {
       type: [String],

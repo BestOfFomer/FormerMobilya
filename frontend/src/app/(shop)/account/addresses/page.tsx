@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { CheckCircle2, XCircle } from 'lucide-react';
 import { AddressDialog } from '@/components/account/AddressDialog';
 import { useAuthStore } from '@/lib/auth-store';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -142,91 +143,142 @@ export default function AddressesPage() {
 
   return (
     <div className="space-y-6">
-      <Card className="py-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Kayıtlı Adreslerim</CardTitle>
-            <Button onClick={handleAddNewAddress}>Yeni Adres Ekle</Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {addresses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <MapPin className="h-16 w-16 text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Henüz kayıtlı adresiniz yok</h2>
-              <p className="text-muted-foreground mb-6 text-center">
-                Hızlı teslimat için adresinizi kaydedin
-              </p>
-              <Button onClick={handleAddNewAddress}>İlk Adresimi Ekle</Button>
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2">
-              {addresses.map((address) => (
-                <Card key={address._id} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="font-semibold">{address.title}</h3>
-                      {address.isDefault && (
-                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-current" />
-                          Varsayılan
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm space-y-1 text-muted-foreground mb-4">
-                      <p className="font-medium text-foreground">{address.fullName}</p>
-                      <p>{address.phone}</p>
-                      <p>{address.address}</p>
-                      <p>{address.district}, {address.city}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleEditAddress(address)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Düzenle
-                      </Button>
-                      {!address.isDefault && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleSetDefault(address._id!)}
-                        >
-                          <StarOff className="h-4 w-4 mr-1" />
-                          Varsayılan Yap
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteClick(address._id!)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="py-6">
-        <CardHeader>
-          <CardTitle>Adres Bilgisi</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <p>
-            Kayıtlı adresleriniz checkout sırasında otomatik olarak seçilebilir.
-            Varsayılan adresiniz ilk olarak gösterilir.
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Adreslerim</h1>
+          <p className="text-muted-foreground mt-1">
+            Teslimat adreslerinizi yönetin. Varsayılan adresiniz siparişlerde otomatik seçilir.
           </p>
-        </CardContent>
-      </Card>
+        </div>
+        <Button onClick={handleAddNewAddress} size="lg" className="md:w-auto w-full">
+          <MapPin className="h-4 w-4 mr-2" />
+          Yeni Adres Ekle
+        </Button>
+      </div>
+
+      {/* Info Alert */}
+      {addresses.length > 0 && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+          <div className="flex gap-3">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                Adres Yönetimi
+              </h3>
+              <p className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                Kayıtlı adresleriniz checkout sırasında kullanılabilir. Varsayılan adresiniz otomatik olarak seçilir.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Address List */}
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Adresler yükleniyor...</p>
+          </div>
+        </div>
+      ) : addresses.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <MapPin className="h-12 w-12 text-muted-foreground" />
+            </div>
+            <h2 className="text-2xl font-semibold mb-2">Henüz kayıtlı adresiniz yok</h2>
+            <p className="text-muted-foreground mb-6 text-center max-w-md">
+              Hızlı teslimat deneyimi için adresinizi kaydedin. Siparişlerinizde zaman kazanın.
+            </p>
+            <Button onClick={handleAddNewAddress} size="lg">
+              <MapPin className="h-4 w-4 mr-2" />
+              İlk Adresimi Ekle
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {addresses.map((address) => (
+            <Card 
+              key={address._id} 
+              className={cn(
+                "relative overflow-hidden transition-all hover:shadow-md",
+                address.isDefault && "ring-2 ring-primary ring-offset-2"
+              )}
+            >
+              <CardContent className="p-6">
+                {/* Default Badge */}
+                {address.isDefault && (
+                  <div className="absolute top-0 right-0">
+                    <div className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-bl-lg flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-current" />
+                      Varsayılan
+                    </div>
+                  </div>
+                )}
+
+                {/* Title */}
+                <div className="mb-4 pt-2">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    {address.title}
+                  </h3>
+                </div>
+
+                {/* Address Details */}
+                <div className="space-y-2 text-sm mb-6">
+                  <p className="font-medium">{address.fullName}</p>
+                  <p className="text-muted-foreground">{address.phone}</p>
+                  <div className="pt-2 border-t">
+                    <p className="text-muted-foreground leading-relaxed">{address.address}</p>
+                    <p className="text-muted-foreground mt-1">
+                      {address.district}, {address.city}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleEditAddress(address)}
+                  >
+                    <Edit className="h-3.5 w-3.5 mr-1.5" />
+                    Düzenle
+                  </Button>
+                  {!address.isDefault && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleSetDefault(address._id!)}
+                    >
+                      <Star className="h-3.5 w-3.5 mr-1.5" />
+                      Varsayılan Yap
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => handleDeleteClick(address._id!)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Address Dialog */}
       <AddressDialog

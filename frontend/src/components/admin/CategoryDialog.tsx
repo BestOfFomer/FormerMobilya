@@ -114,11 +114,8 @@ export function CategoryDialog({
 
       // Upload image if there's a new one
       if (imageFile) {
-        const uploadFormData = new FormData();
-        uploadFormData.append('image', imageFile);
-        
-        const uploadResult = await api.upload.image(uploadFormData, accessToken) as any;
-        imagePath = uploadResult.path;
+        const uploadResult = await api.upload.image(imageFile, accessToken) as any;
+        imagePath = uploadResult.filePath;
       }
 
       const dataToSubmit = {

@@ -3,12 +3,21 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowRight, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import type { Category, Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/shop/ProductCard';
 import { useRef } from 'react';
+
+// Helper to get full image URL
+const getImageUrl = (url?: string) => {
+  if (!url) return '/placeholder-category.jpg';
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  return `${apiUrl}${url}`;
+};
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -139,12 +148,10 @@ function CategoryRow({ category, products }: { category: Category; products: Pro
           {/* Category Image */}
           {category.image && (
             <div className="relative h-16 w-16 overflow-hidden rounded-lg border">
-              <Image
-                src={category.image}
+              <img
+                src={getImageUrl(category.image)}
                 alt={category.name}
-                fill
-                className="object-cover"
-                sizes="64px"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             </div>
           )}

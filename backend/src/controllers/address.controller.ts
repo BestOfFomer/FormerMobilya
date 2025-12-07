@@ -8,7 +8,14 @@ import User from '../models/User';
  */
 export const getAddresses = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'No token provided',
+      });
+    }
 
     const user = await User.findById(userId).select('addresses');
     
@@ -38,7 +45,7 @@ export const getAddresses = async (req: Request, res: Response) => {
  */
 export const addAddress = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const { title, fullName, phone, city, district, address, isDefault } = req.body;
 
     // Validation
@@ -106,7 +113,7 @@ export const addAddress = async (req: Request, res: Response) => {
  */
 export const updateAddress = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const { addressId } = req.params;
     const updates = req.body;
 
@@ -160,7 +167,7 @@ export const updateAddress = async (req: Request, res: Response) => {
  */
 export const deleteAddress = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const { addressId } = req.params;
 
     const user = await User.findById(userId);
@@ -214,7 +221,7 @@ export const deleteAddress = async (req: Request, res: Response) => {
  */
 export const setDefaultAddress = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id;
+    const userId = (req as any).user.userId;
     const { addressId } = req.params;
 
     const user = await User.findById(userId);

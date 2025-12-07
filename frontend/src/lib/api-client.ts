@@ -200,6 +200,16 @@ export const api = {
         token,
       });
     },
+
+    changePassword: (data: { currentPassword: string; newPassword: string }) => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        token,
+      });
+    },
   },
 
   // Categories
@@ -379,28 +389,48 @@ export const api = {
 
   // Addresses
   addresses: {
-    getAll: () => apiRequest('/api/addresses'),
+    getAll: () => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest('/api/addresses', { token });
+    },
     
-    create: (data: Omit<Address, '_id'>) =>
-      apiRequest('/api/addresses', {
+    create: (data: Omit<Address, '_id'>) => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest('/api/addresses', {
         method: 'POST',
         body: JSON.stringify(data),
-      }),
+        token,
+      });
+    },
     
-    update: (id: string, data: Partial<Address>) =>
-      apiRequest(`/api/addresses/${id}`, {
+    update: (id: string, data: Partial<Address>) => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest(`/api/addresses/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
-      }),
+        token,
+      });
+    },
     
-    delete: (id: string) =>
-      apiRequest(`/api/addresses/${id}`, {
+    delete: (id: string) => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest(`/api/addresses/${id}`, {
         method: 'DELETE',
-      }),
+        token,
+      });
+    },
     
-    setDefault: (id: string) =>
-      apiRequest(`/api/addresses/${id}/set-default`, {
+    setDefault: (id: string) => {
+      const authStorage = localStorage.getItem('auth-storage');
+      const token = authStorage ? JSON.parse(authStorage).state?.accessToken : null;
+      return apiRequest(`/api/addresses/${id}/set-default`, {
         method: 'PUT',
-      }),
+        token,
+      });
+    },
   },
 };

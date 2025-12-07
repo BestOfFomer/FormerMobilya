@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,9 +8,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Phone, Mail, MapPin, Clock } from 'lucide-react';
+import { api } from '@/lib/api-client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contactInfo, setContactInfo] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const response = await api.settings.get() as any;
+        if (response.pageContents?.contact) {
+          setContactInfo(response.pageContents.contact);
+        }
+      } catch (error) {
+        console.error('Failed to fetch contact info:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContactInfo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -113,47 +134,85 @@ export default function ContactPage() {
                 <CardTitle>İletişim Bilgileri</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-3">
-                  <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Telefon</div>
-                    <a href="tel:+905551234567" className="text-muted-foreground hover:text-foreground">
-                      +90 555 123 45 67
-                    </a>
-                  </div>
-                </div>
+                {isLoading ? (
+                  <>
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </>
+                ) : (
+                  <>
+                    {contactInfo?.phone?.value && (
+                      <div className="flex gap-3">
+                        <Phone className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-medium">Telefon</div>
+                          <a 
+                            href={`tel:${contactInfo.phone.value.replace(/\s/g, '')}`} 
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {contactInfo.phone.value}
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
-                <div className="flex gap-3">
-                  <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">E-posta</div>
-                    <a href="mailto:info@formermobilya.com" className="text-muted-foreground hover:text-foreground">
-                      info@formermobilya.com
-                    </a>
-                  </div>
-                </div>
+                    {contactInfo?.email?.value && (
+                      <div className="flex gap-3">
+                        <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-medium">E-posta</div>
+                          <a 
+                            href={`mailto:${contactInfo.email.value}`} 
+                            className="text-muted-foreground hover:text-foreground"
+                          >
+                            {contactInfo.email.value}
+                          </a>
+                        </div>
+                      </div>
+                    )}
 
-                <div className="flex gap-3">
-                  <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Adres</div>
-                    <p className="text-muted-foreground">
-                      Örnek Mahallesi, Mobilya Caddesi No:123<br />
-                      İstanbul, Türkiye
-                    </p>
-                  </div>
-                </div>
+                    {contactInfo?.address?.value && (
+                      <div className="flex gap-3">
+                        <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-medium">Adres</div>
+                          <p className="text-muted-foreground whitespace-pre-line">
+                            {contactInfo.address.value}
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
-                <div className="flex gap-3">
-                  <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Çalışma Saatleri</div>
-                    <p className="text-muted-foreground">
-                      Pazartesi - Cumartesi: 09:00 - 19:00<br />
-                      Pazar: 10:00 - 18:00
-                    </p>
-                  </div>
-                </div>
+                    {(contactInfo?.workdays?.value || contactInfo?.workhours?.value) && (
+                      <div className="flex gap-3">
+                        <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                        <div>
+                          <div className="font-medium">Çalışma Saatleri</div>
+                          <p className="text-muted-foreground">
+                            {contactInfo.workdays?.value && (
+                              <>
+                                {contactInfo.workdays.value}
+                                {contactInfo.workhours?.value && <br />}
+                              </>
+                            )}
+                            {contactInfo.workhours?.value && contactInfo.workhours.value}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {contactInfo?.mapEmbed?.value && (
+                      <div className="mt-4">
+                        <div 
+                          className="w-full rounded-lg overflow-hidden"
+                          dangerouslySetInnerHTML={{ __html: contactInfo.mapEmbed.value }}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
 

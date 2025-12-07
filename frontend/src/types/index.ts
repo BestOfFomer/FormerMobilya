@@ -1,5 +1,5 @@
 /**
- * TypeScript Interfaces for FormerMobilya Admin
+ * TypeScript Interfaces for Fomer Mobilya Admin
  */
 
 // User & Auth
@@ -54,6 +54,7 @@ export interface Product {
   category: string | Category;
   basePrice: number;
   discountedPrice?: number;
+  shippingCost: number;
   images: string[];
   model3D?: string;
   dimensions?: {

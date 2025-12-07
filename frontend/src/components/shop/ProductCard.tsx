@@ -78,7 +78,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </h3>
               
               {/* Category */}
-              {typeof product.category === 'object' && (
+              {product.category && typeof product.category === 'object' && product.category.name && (
                 <p className="text-xs text-muted-foreground">
                   {product.category.name}
                 </p>
