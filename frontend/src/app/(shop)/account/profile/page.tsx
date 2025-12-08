@@ -10,9 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { User as UserIcon, Mail, Phone, Calendar, Shield, Edit2, Save, X, Lock, Key, Info, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
-import { User, Mail, Phone, Calendar, Shield, Edit2, Save, X, Lock, Key, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Force dynamic rendering - authenticated page
+export const dynamic = 'force-dynamic';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'İsim en az 2 karakter olmalıdır'),
@@ -104,7 +108,7 @@ export default function ProfilePage() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
+            <UserIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Profil Bilgileri</span>
             <span className="sm:hidden">Profil</span>
           </TabsTrigger>
@@ -143,7 +147,7 @@ export default function ProfilePage() {
                 {/* Name */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="flex items-center gap-2 text-base">
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    <UserIcon className="h-4 w-4 text-muted-foreground" />
                     Ad Soyad
                   </Label>
                   <Input

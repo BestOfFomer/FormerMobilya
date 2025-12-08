@@ -23,6 +23,9 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
+// Force dynamic rendering - this page requires authentication and API access
+export const dynamic = 'force-dynamic';
+
 export default function AddressesPage() {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
