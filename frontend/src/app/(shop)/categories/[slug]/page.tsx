@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { Suspense, use, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api-client';
 import { ProductCard } from '@/components/shop/ProductCard';
@@ -23,7 +23,7 @@ interface CategoryPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
+function CategoryPageContent({ params }: CategoryPageProps) {
   // Unwrap params Promise (Next.js 15+)
   const resolvedParams = use(params);
   const router = useRouter();
@@ -267,5 +267,21 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CategoryPage({ params }: CategoryPageProps) {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-[4/5] rounded-lg" />
+          ))}
+        </div>
+      </div>
+    }>
+      <CategoryPageContent params={params} />
+    </Suspense>
   );
 }

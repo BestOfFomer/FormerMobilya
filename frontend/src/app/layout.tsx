@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Fomer Mobilya Admin',
+  title: 'Fomer Mobilya',
   description: 'Fomer Mobilya e-commerce admin panel',
 };
 

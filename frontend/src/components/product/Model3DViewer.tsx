@@ -2,14 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'model-viewer': any;
-    }
-  }
-}
-
 interface Model3DViewerProps {
   modelUrl: string;
   productName: string;
@@ -182,6 +174,7 @@ export function Model3DViewer({ modelUrl, productName, dimensions }: Model3DView
 
   return (
     <div className="relative w-full h-full min-h-[400px] md:min-h-[500px]">
+      {/* @ts-expect-error - model-viewer is a custom element from @google/model-viewer */}
       <model-viewer
         ref={modelViewerRef}
         src={fullModelUrl}
@@ -284,6 +277,7 @@ export function Model3DViewer({ modelUrl, productName, dimensions }: Model3DView
           {dimensions?.height && <line className="dimensionLine" />}
           {dimensions?.width && <line className="dimensionLine" />}
         </svg>
+      {/* @ts-expect-error - model-viewer is a custom element from @google/model-viewer */}
       </model-viewer>
 
       <style jsx>{`
