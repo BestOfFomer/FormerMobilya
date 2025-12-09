@@ -73,10 +73,22 @@ export async function apiRequest<T>(
 
   const url = `${API_BASE_URL}${endpoint}`;
 
+  // Global Timeout Logic
+  // If no signal implies, we create one with 5s timeout
+  let timeoutId: NodeJS.Timeout | undefined;
+  let signal = fetchOptions.signal;
+
+  if (!signal) {
+    const controller = new AbortController();
+    timeoutId = setTimeout(() => controller.abort(), 5000); // 5s global timeout
+    signal = controller.signal;
+  }
+
   try {
     const response = await fetch(url, {
       ...fetchOptions,
       headers,
+      signal, // Use the signal (either provided or created)
     });
 
     // Handle 401 Unauthorized - attempt token refresh
@@ -148,13 +160,24 @@ export async function apiRequest<T>(
     }
 
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    // Check if it's an abort error (timeout)
+    if (error.name === 'AbortError') {
+       // Log warning but throw specific error so callers can handle if needed
+       console.warn(`API Request timeout for ${endpoint}`);
+       throw new APIError(408, 'Request timed out');
+    }
+
     if (error instanceof APIError) {
       throw error;
     }
 
     // Network or other errors
     throw new APIError(500, 'Network error or server unavailable');
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
 }
 
