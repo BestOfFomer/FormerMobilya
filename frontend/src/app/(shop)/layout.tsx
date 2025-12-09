@@ -9,8 +9,14 @@ export default async function ShopLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const categoriesResponse = (await api.categories.getAll()) as any;
-  const categories = categoriesResponse.categories || [];
+  let categories = [];
+  try {
+    const categoriesResponse = (await api.categories.getAll()) as any;
+    categories = categoriesResponse.categories || [];
+  } catch (error) {
+    console.error('Failed to fetch categories in layout:', error);
+    // Continue with empty categories to prevent build failure
+  }
 
   return (
     <div suppressHydrationWarning>
