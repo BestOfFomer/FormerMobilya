@@ -214,7 +214,7 @@ export const api = {
 
   // Categories
   categories: {
-    getAll: () => apiRequest('/api/categories', { skipAuth: true }),
+    getAll: (options?: RequestInit) => apiRequest('/api/categories', { ...options, skipAuth: true }),
     
     getBySlug: (slug: string) => apiRequest(`/api/categories/${slug}`, { skipAuth: true }),
     
