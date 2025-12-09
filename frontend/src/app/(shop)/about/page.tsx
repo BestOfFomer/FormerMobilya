@@ -1,11 +1,12 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Award, Users, Calendar, Star, TrendingUp, Package, Home, Heart, ThumbsUp, Zap, Target, Badge } from 'lucide-react';
 import { api } from '@/lib/api-client';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const iconMap: Record<string, any> = {
   calendar: Calendar,
@@ -23,31 +24,14 @@ const iconMap: Record<string, any> = {
   badge: Badge,
 };
 
-export default function AboutPage() {
-  const [settings, setSettings] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default async function AboutPage() {
+  let settings: any = null;
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const data = await api.settings.get() as any;
-        setSettings(data.aboutPage);
-      } catch (error) {
-        console.error('Failed to load about page settings:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSettings();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Yükleniyor...</p>
-      </div>
-    );
+  try {
+    const data = await api.settings.get() as any;
+    settings = data.aboutPage;
+  } catch (error) {
+    console.error('Failed to load about page settings:', error);
   }
 
   // If settings not loaded, show minimal page
@@ -59,7 +43,7 @@ export default function AboutPage() {
             <div className="max-w-3xl">
               <h1 className="text-4xl font-bold mb-4">Hakkımızda</h1>
               <p className="text-xl text-muted-foreground">
-                Fomer Mobilya hakkında bilgi yükleniyor...
+                Fomer Mobilya hakkında bilgiler yükleniyor...
               </p>
             </div>
           </div>
