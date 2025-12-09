@@ -29,7 +29,8 @@ export default async function AboutPage() {
 
   try {
     const data = await api.settings.get() as any;
-    settings = data.aboutPage;
+    // Fix: API returns full settings object, about data is in pageContents.about
+    settings = data.pageContents?.about;
   } catch (error) {
     console.error('Failed to load about page settings:', error);
   }
