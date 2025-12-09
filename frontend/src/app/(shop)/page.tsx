@@ -8,6 +8,10 @@ import { CategoryGrid } from '@/components/shop/CategoryGrid';
 import { TrustBadges } from '@/components/shop/TrustBadges';
 import { NewsletterBanner } from '@/components/shop/NewsletterBanner';
 
+// Force dynamic rendering to fetch fresh data on each request
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePage() {
   let categories: Category[] = [];
   let featuredProducts: Product[] = [];
