@@ -15,6 +15,8 @@ import { activityLogger } from './middleware/activityLogger';
 dotenv.config();
 
 const app: Application = express();
+// Trust proxy is required for rate limiting and secure cookies behind Railway/Vercel proxies
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 4000;
 
 import path from 'path';
