@@ -190,7 +190,7 @@ const OrderSchema = new Schema<IOrder>(
 
 // Indexes for queries
 OrderSchema.index({ user: 1, createdAt: -1 });
-OrderSchema.index({ orderNumber: 1 });
+
 OrderSchema.index({ paymentStatus: 1, orderStatus: 1 });
 
 // Pre-save: auto-generate order number

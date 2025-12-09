@@ -116,8 +116,7 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-// Index for email lookup
-UserSchema.index({ email: 1 });
+// Index for email is already defined with unique: true
 
 // Pre-save: Ensure only one default address
 UserSchema.pre('save', function () {
