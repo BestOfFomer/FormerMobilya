@@ -16,6 +16,26 @@ const nextConfig: NextConfig = {
     ],
   },
   reactCompiler: true,
+  experimental: {
+    // Force specific routes to be dynamic
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+  },
+  // Skip static generation for account pages
+  async headers() {
+    return [
+      {
+        source: '/account/:path*',
+        headers: [
+          {
+            key: 'x-prerender-bypass',
+            value: 'true',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

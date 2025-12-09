@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 
 // Force dynamic rendering for all account pages - requires authentication
 export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
+export const runtime = 'nodejs';
 
 export default function AccountLayout({
   children,
