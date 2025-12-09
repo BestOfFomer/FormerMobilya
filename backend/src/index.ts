@@ -105,6 +105,17 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/addresses', addressRoutes);
 
+// Root endpoint for Railway health check (must return 200)
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'FormerMobilya Backend API',
+    version: '1.0.0',
+    health: '/health',
+    api: '/api',
+  });
+});
+
 // Health Check Route
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
