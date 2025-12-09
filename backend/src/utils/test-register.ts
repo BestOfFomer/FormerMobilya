@@ -20,7 +20,6 @@ const testRegister = async () => {
       },
     } as Request;
 
-    let responseData: any = null;
     let statusCode = 0;
 
     const mockRes = {
@@ -29,7 +28,6 @@ const testRegister = async () => {
         return mockRes;
       },
       json: (data: any) => {
-        responseData = data;
         console.log('\n📤 Response Status:', statusCode);
         console.log('📤 Response Data:', JSON.stringify(data, null, 2));
       },
