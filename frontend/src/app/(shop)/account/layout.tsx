@@ -15,6 +15,10 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 
+// Force dynamic rendering for all account pages - requires authentication
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
 export default function AccountLayout({
   children,
 }: {
