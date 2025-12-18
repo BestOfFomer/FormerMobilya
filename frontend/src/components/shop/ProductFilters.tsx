@@ -11,23 +11,26 @@ import { X } from 'lucide-react';
 export interface FilterState {
   priceRange: [number, number];
   materials: string[];
+  categories: string[];
   inStockOnly: boolean;
 }
 
 interface ProductFiltersProps {
   onFilterChange: (filters: FilterState) => void;
   availableMaterials?: string[];
+  categories?: Array<{ _id: string; name: string }>;
 }
 
-export function ProductFilters({ onFilterChange, availableMaterials = [] }: ProductFiltersProps) {
+export function ProductFilters({ onFilterChange, availableMaterials = [], categories = [] }: ProductFiltersProps) {
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 50000]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [inStockOnly, setInStockOnly] = useState(false);
 
   const handlePriceChange = (value: number[]) => {
     const newRange: [number, number] = [value[0], value[1]];
     setPriceRange(newRange);
-    applyFilters({ priceRange: newRange, materials: selectedMaterials, inStockOnly });
+    applyFilters({ priceRange: newRange, materials: selectedMaterials, categories: selectedCategories, inStockOnly });
   };
 
   const handleMaterialToggle = (material: string) => {
@@ -35,12 +38,20 @@ export function ProductFilters({ onFilterChange, availableMaterials = [] }: Prod
       ? selectedMaterials.filter((m) => m !== material)
       : [...selectedMaterials, material];
     setSelectedMaterials(newMaterials);
-    applyFilters({ priceRange: priceRange, materials: newMaterials, inStockOnly });
+    applyFilters({ priceRange: priceRange, materials: newMaterials, categories: selectedCategories, inStockOnly });
+  };
+
+  const handleCategoryToggle = (categoryId: string) => {
+    const newCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter((c) => c !== categoryId)
+      : [...selectedCategories, categoryId];
+    setSelectedCategories(newCategories);
+    applyFilters({ priceRange, materials: selectedMaterials, categories: newCategories, inStockOnly });
   };
 
   const handleStockToggle = (checked: boolean) => {
     setInStockOnly(checked);
-    applyFilters({ priceRange: priceRange, materials: selectedMaterials, inStockOnly: checked });
+    applyFilters({ priceRange: priceRange, materials: selectedMaterials, categories: selectedCategories, inStockOnly: checked });
   };
 
   const applyFilters = (filters: FilterState) => {
@@ -51,11 +62,12 @@ export function ProductFilters({ onFilterChange, availableMaterials = [] }: Prod
     const defaultRange: [number, number] = [0, 50000];
     setPriceRange(defaultRange);
     setSelectedMaterials([]);
+    setSelectedCategories([]);
     setInStockOnly(false);
-    onFilterChange({ priceRange: defaultRange, materials: [], inStockOnly: false });
+    onFilterChange({ priceRange: defaultRange, materials: [], categories: [], inStockOnly: false });
   };
 
-  const hasActiveFilters = selectedMaterials.length > 0 || inStockOnly || priceRange[0] > 0 || priceRange[1] < 50000;
+  const hasActiveFilters = selectedMaterials.length > 0 || selectedCategories.length > 0 || inStockOnly || priceRange[0] > 0 || priceRange[1] < 50000;
 
   return (
     <Card className="sticky top-20 py-6">
@@ -86,6 +98,30 @@ export function ProductFilters({ onFilterChange, availableMaterials = [] }: Prod
             <span>₺{priceRange[1].toLocaleString('tr-TR')}</span>
           </div>
         </div>
+
+        {/* Categories */}
+        {categories.length > 0 && (
+          <div className="space-y-3">
+            <Label>Kategoriler</Label>
+            <div className="space-y-2">
+              {categories.map((category) => (
+                <div key={category._id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`category-${category._id}`}
+                    checked={selectedCategories.includes(category._id)}
+                    onCheckedChange={() => handleCategoryToggle(category._id)}
+                  />
+                  <Label
+                    htmlFor={`category-${category._id}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {category.name}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Stock Filter */}
         <div className="flex items-center space-x-2">

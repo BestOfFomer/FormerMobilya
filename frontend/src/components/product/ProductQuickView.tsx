@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/cart-store';
-import { Eye, ShoppingCart, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, ShoppingCart, ExternalLink, ChevronLeft, ChevronRight, Box } from 'lucide-react';
 import type { Product } from '@/types';
 
 interface ProductQuickViewProps {
@@ -20,6 +20,19 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCartStore((state) => state.addItem);
+
+  // Extract iframe src from Sketchfab embed HTML
+  const extractSketchfabSrc = (embedHtml: string): string | null => {
+    const match = embedHtml.match(/src="([^"]+)"/i);
+    return match ? match[1] : null;
+  };
+
+  const sketchfabSrc = product.sketchfabEmbed ? extractSketchfabSrc(product.sketchfabEmbed) : null;
+  
+  // Calculate total slides
+  const has3D = !!product.model3D;
+  const hasSketchfab = !!sketchfabSrc;
+  const totalSlides = (product.images?.length || 0) + (has3D ? 1 : 0) + (hasSketchfab ? 1 : 0);
 
   // Calculate display price and discount
   const displayPrice = (product.discountedPrice || product.basePrice) as number;
@@ -57,42 +70,65 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
 
   const handlePrevImage = () => {
     setSelectedImage((prev) => 
-      prev === 0 ? (product.images?.length || 1) - 1 : prev - 1
+      prev === 0 ? totalSlides - 1 : prev - 1
     );
   };
 
   const handleNextImage = () => {
     setSelectedImage((prev) => 
-      prev === (product.images?.length || 1) - 1 ? 0 : prev + 1
+      prev === totalSlides - 1 ? 0 : prev + 1
     );
   };
 
-  const hasMultipleImages = product.images && product.images.length > 1;
+  // Determine what to display
+  const isModel3DSlide = has3D && selectedImage === (product.images?.length || 0);
+  const isSketchfabSlide = hasSketchfab && selectedImage === (product.images?.length || 0) + (has3D ? 1 : 0);
+  const hasMultipleSlides = totalSlides > 1;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="sr-only">Ürün Hızlı Görünüm</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           {/* Image Gallery - Top */}
           <div className="space-y-4">
             {/* Main Image */}
             <div className="relative aspect-video overflow-hidden rounded-lg bg-muted group">
-              <Image
-                src={getImageUrl(product.images?.[selectedImage])}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="100vw"
-                priority
-                unoptimized
-              />
+              {isSketchfabSlide ? (
+                <div className="relative w-full h-full flex items-center justify-center bg-black">
+                  <iframe
+                    src={sketchfabSrc!}
+                    title="Sketchfab 3D Model"
+                    className="w-full h-full border-0"
+                    allow="autoplay; fullscreen; xr-spatial-tracking"
+                    allowFullScreen
+                  />
+                </div>
+              ) : isModel3DSlide ? (
+                <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-900 to-gray-700">
+                  <div className="text-white text-center">
+                    <Box className="w-16 h-16 mx-auto mb-4" />
+                    <p className="text-sm">3D Model Available</p>
+                    <p className="text-xs text-gray-400 mt-2">View on product page</p>
+                  </div>
+                </div>
+              ) : (
+                <Image
+                  src={getImageUrl(product.images?.[selectedImage])}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                  priority
+                  unoptimized
+                />
+              )}
               
               {/* Navigation Chevrons */}
-              {hasMultipleImages && (
+              {hasMultipleSlides && (
                 <>
                   <button
                     onClick={handlePrevImage}
@@ -126,8 +162,8 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
             </div>
 
             {/* Thumbnail Images */}
-            {hasMultipleImages && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+            {hasMultipleSlides && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 max-w-full">
                 {product.images.map((image, index) => (
                   <button
                     key={index}
@@ -148,6 +184,32 @@ export function ProductQuickView({ product, open, onOpenChange }: ProductQuickVi
                     />
                   </button>
                 ))}
+                {has3D && (
+                  <button
+                    onClick={() => setSelectedImage(product.images?.length || 0)}
+                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 transition-all flex items-center justify-center bg-muted ${
+                      isModel3DSlide
+                        ? 'border-primary ring-2 ring-primary/20'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <Box className="w-8 h-8 text-primary" />
+                  </button>
+                )}
+                {hasSketchfab && (
+                  <button
+                    onClick={() => setSelectedImage((product.images?.length || 0) + (has3D ? 1 : 0))}
+                    className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md border-2 transition-all flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 ${
+                      isSketchfabSlide
+                        ? 'border-primary ring-2 ring-primary/20'
+                        : 'border-transparent hover:border-gray-300'
+                    }`}
+                  >
+                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.82 8 12 11.82 4.18 8 12 4.18zM4 9.77l7 3.5v7.46l-7-3.5V9.77zm16 7.46l-7 3.5v-7.46l7-3.5v7.46z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
             )}
           </div>
