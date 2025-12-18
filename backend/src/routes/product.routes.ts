@@ -19,6 +19,6 @@ router.get('/:slug', getProductBySlug);
 // Admin routes with validation
 router.post('/', authenticate, authorizeAdmin, validate(productSchema), createProduct);
 router.put('/:id', authenticate, authorizeAdmin, validate(productSchema), updateProduct);
-router.delete('/', authenticate, authorizeAdmin, deleteProduct);
+router.delete('/:id', authenticate, authorizeAdmin, deleteProduct);
 
 export default router;

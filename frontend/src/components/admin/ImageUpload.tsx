@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { useAuthStore } from '@/lib/auth-store';
 import { api } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,8 @@ export function ImageUpload({ images, onChange, disabled }: ImageUploadProps) {
     onChange(newImages);
   };
 
+  const uniqueId = useId();
+
   return (
     <div className="space-y-4 relative">
       {/* Loading Overlay */}
@@ -80,13 +82,13 @@ export function ImageUpload({ images, onChange, disabled }: ImageUploadProps) {
           variant="outline"
           size="sm"
           disabled={disabled || isUploading}
-          onClick={() => document.getElementById('image-upload')?.click()}
+          onClick={() => document.getElementById(uniqueId)?.click()}
         >
           <Upload className="w-4 h-4 mr-2" />
           {isUploading ? 'Yükleniyor...' : 'Görsel Ekle'}
         </Button>
         <input
-          id="image-upload"
+          id={uniqueId}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           multiple

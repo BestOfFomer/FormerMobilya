@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, Edit2 } from 'lucide-react';
+import { Plus, X, Edit2, Image as ImageIcon } from 'lucide-react';
+import { ImageUpload } from '@/components/admin/ImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ interface Variant {
   options: VariantOption[];
   stock: number;
   priceOverride?: number;
+  images?: string[];
 }
 
 interface VariantManagerProps {
@@ -43,6 +45,7 @@ export function VariantManager({ variants, onChange, disabled }: VariantManagerP
     options: [],
     stock: 0,
     priceOverride: undefined,
+    images: [],
   });
   const [optionName, setOptionName] = useState('');
   const [optionValues, setOptionValues] = useState('');
@@ -58,6 +61,7 @@ export function VariantManager({ variants, onChange, disabled }: VariantManagerP
         options: [],
         stock: 0,
         priceOverride: undefined,
+        images: [],
       });
     }
     setDialogOpen(true);
@@ -140,6 +144,12 @@ export function VariantManager({ variants, onChange, disabled }: VariantManagerP
                       {variant.priceOverride && (
                         <Badge variant="secondary">
                           +₺{variant.priceOverride.toFixed(2)}
+                        </Badge>
+                      )}
+                      {variant.images && variant.images.length > 0 && (
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <ImageIcon className="w-3 h-3" />
+                          {variant.images.length} görsel
                         </Badge>
                       )}
                     </div>
@@ -258,6 +268,24 @@ export function VariantManager({ variants, onChange, disabled }: VariantManagerP
                   ))}
                 </div>
               )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-3">
+              <Label>Varyanta Özel Görseller</Label>
+              <p className="text-xs text-muted-foreground">
+                Bu varyant seçildiğinde gösterilecek görseller (opsiyonel)
+              </p>
+              <ImageUpload
+                images={currentVariant.images || []}
+                onChange={(images) =>
+                  setCurrentVariant({ ...currentVariant, images })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Görseller seçili değilse, ürünün ana görselleri gösterilir
+              </p>
             </div>
 
             <Separator />

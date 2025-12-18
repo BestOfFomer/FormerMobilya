@@ -47,23 +47,8 @@ export function Model3DUpload({ modelPath, onChange, disabled }: Model3DUploadPr
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('model', file);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/model3d`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      onChange(data.filePath);
+      const response = await api.upload.model3d(file, accessToken) as any;
+      onChange(response.filePath);
       
       toast.success('3D model yüklendi', {
         icon: <CheckCircle2 className="h-5 w-5" />,

@@ -57,6 +57,7 @@ export interface Product {
   shippingCost: number;
   images: string[];
   model3D?: string;
+  sketchfabEmbed?: string;
   dimensions?: {
     width?: number;
     height?: number;
@@ -86,6 +87,7 @@ export interface ProductVariant {
   stock: number;
   priceModifier?: number;
   priceOverride?: number;
+  images?: string[];
 }
 
 // Order

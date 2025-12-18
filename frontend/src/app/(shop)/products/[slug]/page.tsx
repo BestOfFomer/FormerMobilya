@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { api } from '@/lib/api-client';
@@ -32,6 +32,26 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const [selectedVariant, setSelectedVariant] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
 
+  const getImageUrl = (url?: string) => {
+    if (!url) return '/placeholder.jpg';
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
+  };
+
+  // Dynamic images: show variant images if selected and available, otherwise product images
+  const images = useMemo(() => {
+    if (!product) return ['/placeholder.jpg'];
+    
+    // If a variant is selected and it has images, use those
+    if (selectedVariant !== null && product.variants?.[selectedVariant]?.images?.length) {
+      return product.variants[selectedVariant].images.map(getImageUrl);
+    }
+    // Otherwise fallback to product images
+    return product.images?.map(getImageUrl) || [getImageUrl()];
+  }, [product, selectedVariant]);
+  
   useEffect(() => {
     fetchProduct();
   }, [resolvedParams.slug]);
@@ -71,13 +91,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     }
   };
 
-  const getImageUrl = (url?: string) => {
-    if (!url) return '/placeholder.jpg';
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    return `${process.env.NEXT_PUBLIC_API_URL}${url}`;
-  };
+
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -131,7 +145,6 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
 
   const hasDiscount = product.discountedPrice && product.discountedPrice < product.basePrice;
   const displayPrice = hasDiscount && product.discountedPrice ? product.discountedPrice : product.basePrice;
-  const images = product.images?.map(getImageUrl) || [getImageUrl()];
 
   return (
     <div className="min-h-screen">
@@ -165,9 +178,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
           {/* Left Column - Image Gallery */}
           <div>
             <ProductGallery 
-              images={images} 
+              images={images}
               productName={product.name}
               model3D={product.model3D}
+              sketchfabEmbed={product.sketchfabEmbed}
               dimensions={product.dimensions}
             />
           </div>

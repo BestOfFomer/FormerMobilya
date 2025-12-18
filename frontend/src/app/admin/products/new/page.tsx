@@ -39,6 +39,7 @@ const productSchema = z.object({
   shippingCost: z.number().min(0, 'Kargo ücreti 0 veya daha fazla olmalı'),
   images: z.array(z.string()).min(1, 'En az 1 görsel ekleyin'),
   model3D: z.string().optional(),
+  sketchfabEmbed: z.string().optional(),
   dimensions: z.object({
     width: z.number().min(0).optional(),
     height: z.number().min(0).optional(),
@@ -53,6 +54,7 @@ const productSchema = z.object({
     })),
     stock: z.number().min(0),
     priceOverride: z.number().optional(),
+    images: z.array(z.string()).optional(),
   })).optional(),
   active: z.boolean().optional(),
 });
@@ -534,6 +536,30 @@ export default function NewProductPage() {
               onChange={(modelPath) => setValue('model3D', modelPath)}
               disabled={isLoading}
             />
+          </CardContent>
+        </Card>
+
+        {/* Sketchfab Embed */}
+        <Card className="py-6">
+          <CardHeader>
+            <CardTitle>Sketchfab 3D Görüntüleyici (Opsiyonel)</CardTitle>
+            <CardDescription>Sketchfab embed kodunu buraya yapıştırın</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="sketchfabEmbed">Sketchfab Embed Kodu</Label>
+              <Textarea
+                id="sketchfabEmbed"
+                {...register('sketchfabEmbed')}
+                placeholder='<div class="sketchfab-embed-wrapper">...</div>'
+                rows={6}
+                disabled={isLoading}
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                Sketchfab modelinden aldığınız embed HTML kodunu buraya yapıştırın
+              </p>
+            </div>
           </CardContent>
         </Card>
 

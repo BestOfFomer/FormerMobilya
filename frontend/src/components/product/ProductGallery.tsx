@@ -11,6 +11,7 @@ interface ProductGalleryProps {
   images: string[];
   productName: string;
   model3D?: string;
+  sketchfabEmbed?: string;
   dimensions?: {
     width?: number;
     height?: number;
@@ -18,8 +19,19 @@ interface ProductGalleryProps {
   };
 }
 
-export function ProductGallery({ images, productName, model3D, dimensions }: ProductGalleryProps) {
-  const totalSlides = model3D ? images.length + 1 : images.length;
+export function ProductGallery({ images, productName, model3D, sketchfabEmbed, dimensions }: ProductGalleryProps) {
+  // Extract iframe src from Sketchfab embed HTML
+  const extractSketchfabSrc = (embedHtml: string): string | null => {
+    const match = embedHtml.match(/src="([^"]+)"/i);
+    return match ? match[1] : null;
+  };
+
+  const sketchfabSrc = sketchfabEmbed ? extractSketchfabSrc(sketchfabEmbed) : null;
+  
+  // Calculate total slides: images + optional 3D model + optional Sketchfab
+  const has3D = !!model3D;
+  const hasSketchfab = !!sketchfabSrc;
+  const totalSlides = images.length + (has3D ? 1 : 0) + (hasSketchfab ? 1 : 0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
@@ -43,8 +55,10 @@ export function ProductGallery({ images, productName, model3D, dimensions }: Pro
     handleImageChange(newIndex);
   };
 
-  const isModel3DSlide = model3D && selectedIndex === images.length;
-  const currentImage = !isModel3DSlide ? (images[selectedIndex] || '/placeholder.jpg') : '';
+  // Determine what to display
+  const isModel3DSlide = has3D && selectedIndex === images.length;
+  const isSketchfabSlide = hasSketchfab && selectedIndex === images.length + (has3D ? 1 : 0);
+  const currentImage = !isModel3DSlide && !isSketchfabSlide ? (images[selectedIndex] || '/placeholder.jpg') : '';
 
   return (
     <div className="space-y-4">
@@ -57,7 +71,17 @@ export function ProductGallery({ images, productName, model3D, dimensions }: Pro
             isTransitioning ? "opacity-0" : "opacity-100"
           )}
         >
-          {isModel3DSlide ? (
+          {isSketchfabSlide ? (
+            <div className="relative w-full h-full flex items-center justify-center bg-black">
+              <iframe
+                src={sketchfabSrc!}
+                title="Sketchfab 3D Model"
+                className="w-full h-full border-0"
+                allow="autoplay; fullscreen; xr-spatial-tracking"
+                allowFullScreen
+              />
+            </div>
+          ) : isModel3DSlide ? (
             <Model3DViewer
               modelUrl={model3D!}
               productName={productName}
@@ -146,6 +170,22 @@ export function ProductGallery({ images, productName, model3D, dimensions }: Pro
               aria-label="3D Modele git"
             >
               <Box className="w-8 h-8 text-primary" />
+            </button>
+          )}
+          {hasSketchfab && (
+            <button
+              onClick={() => handleImageChange(images.length + (has3D ? 1 : 0))}
+              className={cn(
+                'relative flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all duration-300 flex flex-col items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600',
+                selectedIndex === images.length + (has3D ? 1 : 0)
+                  ? 'border-primary ring-2 ring-primary/30 scale-110 shadow-lg'
+                  : 'border-border hover:border-primary/50 opacity-70 hover:opacity-100 hover:scale-105'
+              )}
+              aria-label="Sketchfab'a git"
+            >
+              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.82 8 12 11.82 4.18 8 12 4.18zM4 9.77l7 3.5v7.46l-7-3.5V9.77zm16 7.46l-7 3.5v-7.46l7-3.5v7.46z"/>
+              </svg>
             </button>
           )}
         </div>

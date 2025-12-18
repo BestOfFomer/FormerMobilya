@@ -9,6 +9,7 @@ export interface IVariant {
   }>;
   stock: number;
   priceOverride?: number;
+  images?: string[];
 }
 
 // Product Dimensions Interface
@@ -31,6 +32,7 @@ export interface IProduct extends Document {
   shippingCost: number;
   images: string[];
   model3D?: string;
+  sketchfabEmbed?: string;
   dimensions?: IDimensions;
   materials: string[];
   variants: IVariant[];
@@ -112,6 +114,11 @@ const ProductSchema = new Schema<IProduct>(
       required: false,
       trim: true,
     },
+    sketchfabEmbed: {
+      type: String,
+      required: false,
+      trim: true,
+    },
     dimensions: {
       width: { type: Number, min: 0 },
       height: { type: Number, min: 0 },
@@ -151,6 +158,10 @@ const ProductSchema = new Schema<IProduct>(
         priceOverride: {
           type: Number,
           min: [0, 'Fiyat negatif olamaz'],
+        },
+        images: {
+          type: [String],
+          default: [],
         },
       },
     ],

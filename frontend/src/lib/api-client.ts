@@ -62,7 +62,7 @@ export async function apiRequest<T>(
   const { token, skipAuth, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(!(fetchOptions.body instanceof FormData) && { 'Content-Type': 'application/json' }),
     ...(fetchOptions.headers as Record<string, string>),
   };
 
@@ -357,44 +357,34 @@ export const api = {
 
   // Upload
   upload: {
-    image: async (file: File, token: string) => {
+    image: (file: File, token: string) => {
       const formData = new FormData();
       formData.append('image', file);
-
-      const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+      return apiRequest('/api/upload/image', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         body: formData,
+        token,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new APIError(response.status, data.message || 'Upload failed');
-      }
-
-      return response.json();
     },
 
-    images: async (files: File[], token: string) => {
+    images: (files: File[], token: string) => {
       const formData = new FormData();
       files.forEach((file) => formData.append('images', file));
-
-      const response = await fetch(`${API_BASE_URL}/api/upload/images`, {
+      return apiRequest('/api/upload/images', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
         body: formData,
+        token,
       });
+    },
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new APIError(response.status, data.message || 'Upload failed');
-      }
-
-      return response.json();
+    model3d: (file: File, token: string) => {
+      const formData = new FormData();
+      formData.append('model', file);
+      return apiRequest('/api/upload/model3d', {
+        method: 'POST',
+        body: formData,
+        token,
+      });
     },
   },
 
